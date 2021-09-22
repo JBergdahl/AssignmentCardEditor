@@ -8,20 +8,21 @@ using MongoDB.Driver;
 
 namespace Data
 {
-    public class CardEditorDbContext
+    public class CardEditorDbContext : ICardEditorDbContext
     {
         private const string MongoDbUrl = "mongodb://localhost:27017";
         private const string CardEditorDbName = "CardEditor";
-        private readonly IMongoDatabase _database;
-
-        public CardEditorDbContext()
-        {
-            var client = new MongoClient(MongoDbUrl);
-            _database = client.GetDatabase(CardEditorDbName);
-        }
 
         // Store collection name
         private const string CardCollectionName = "cards";
+
+        private readonly IMongoDatabase _database;
+
+        public CardEditorDbContext(IMongoDatabase database)
+        {
+            _database = database;
+        }
+
 
         // Store collection according to type
         private readonly Dictionary<Type, string> _collectionNames = new()
@@ -29,14 +30,12 @@ namespace Data
             { typeof(Card), CardCollectionName }
         };
 
-        public IMongoCollection<Card> Cards => GetCollection<Card>();
-
         // Get collection that corresponds to the type
         private IMongoCollection<T> GetCollection<T>()
         {
-            var typeOfInstance = typeof(T);
-            var collectionName = _collectionNames[typeOfInstance];
-            return _database.GetCollection<T>(collectionName);
+            return _database.GetCollection<T>(_collectionNames[typeof(T)]);
         }
+
+        public IMongoCollection<Card> Cards => GetCollection<Card>();
     }
 }

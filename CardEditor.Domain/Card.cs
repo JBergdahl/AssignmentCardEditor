@@ -28,5 +28,8 @@ namespace CardEditor.Domain
 
         [BsonElement("mana")]
         public int Mana { get; set; }
+
+        [BsonElement("image_path")]
+        public string ImagePath { get; set; }
     }
 }

@@ -12,21 +12,17 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using AssignmentCardEditor.Models;
-using AssignmentCardEditor.ViewModels;
-using CommunityToolkit.Mvvm.DependencyInjection;
 
-namespace AssignmentCardEditor
+namespace AssignmentCardEditor.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for CardView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class CardView : UserControl
     {
-        public MainWindow()
+        public CardView()
         {
             InitializeComponent();
-            DataContext = Ioc.Default.GetService<MainWindowViewModel>();
         }
     }
 }
