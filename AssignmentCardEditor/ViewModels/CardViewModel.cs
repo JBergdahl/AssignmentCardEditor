@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AssignmentCardEditor.ViewModels
 {
@@ -14,11 +15,21 @@ namespace AssignmentCardEditor.ViewModels
         private int _defense;
         private int _speed;
         private int _mana;
+        private bool _nameIsValid;
+
+        public RelayCommand SaveCommand { get; set; }
 
         public string Name
         {
             get => _name;
-            set => SetProperty(ref _name, value);
+            set
+            {
+                if (SetProperty(ref _name, value))
+                {
+                    NameIsValid = ValidLengthAndNotInDatabase(_name);
+                    SaveCommand.NotifyCanExecuteChanged();
+                }
+            }
         }
 
         public int Attack
@@ -43,6 +54,18 @@ namespace AssignmentCardEditor.ViewModels
         {
             get => _mana;
             set => SetProperty(ref _mana, value);
+        }
+
+        public bool NameIsValid
+        {
+            get => _nameIsValid;
+            set => SetProperty(ref _nameIsValid, value);
+        }
+
+        private bool ValidLengthAndNotInDatabase(string name)
+        {
+            // Add duplicate check in database
+            return name is not null && name.Length > 1;
         }
     }
 }
