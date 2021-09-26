@@ -8,7 +8,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace CardEditor.Domain
 {
-    public class Card
+    public class @string
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -19,9 +19,6 @@ namespace CardEditor.Domain
 
         [BsonElement("card_type")]
         public string CardType { get; set; }
-
-        [BsonElement("image_path")]
-        public string ImagePath { get; set; }
 
         [BsonElement("attack")]
         public int Attack { get; set; }
@@ -34,5 +31,8 @@ namespace CardEditor.Domain
 
         [BsonElement("mana")]
         public int Mana { get; set; }
+
+        [BsonElement("image_path")]
+        public string ImagePath { get; set; }
     }
 }

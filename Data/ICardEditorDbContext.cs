@@ -11,5 +11,6 @@ namespace Data
     public interface ICardEditorDbContext
     {
         IMongoCollection<Card> Cards { get; }
+        IMongoCollection<CardType> CardTypes { get; }
     }
 }

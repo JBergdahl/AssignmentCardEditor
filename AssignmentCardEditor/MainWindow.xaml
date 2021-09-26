@@ -8,8 +8,8 @@
     xmlns:viewModels="clr-namespace:AssignmentCardEditor.ViewModels"
     xmlns:views="clr-namespace:AssignmentCardEditor.Views"
     Title="Card Editor"
-    Width="800"
-    Height="450"
+    Width="1200"
+    Height="800"
     d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
     mc:Ignorable="d">
     <Grid>
@@ -18,18 +18,20 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0">
+        <Grid
+            Grid.Row="0"
+            Grid.Column="0">
             <views:CardView DataContext="{Binding CardViewModel}" />
         </Grid>
-        <Grid Grid.Column="1">
-            <Rectangle
-                Grid.Row="0"
-                Fill="IndianRed" />
+        <Grid
+            Grid.Row="0"
+            Grid.Column="1">
+            <views:CardTypeView DataContext="{Binding CardTypeViewModel}" />
         </Grid>
-        <Grid Grid.Column="2">
-            <Rectangle
-                Grid.Row="0"
-                Fill="Gold" />
+        <Grid
+            Grid.Row="0"
+            Grid.Column="2">
+            <views:BrowserView DataContext="{Binding BrowserViewModel}" />
         </Grid>
     </Grid>
 </Window>

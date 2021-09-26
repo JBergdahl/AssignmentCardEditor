@@ -38,6 +38,8 @@ namespace AssignmentCardEditor
                 .AddSingleton<IDbMethods, DbMethods>()
                 .AddTransient<MainWindowViewModel>()
                 .AddTransient<CardViewModel>()
+                .AddTransient<CardTypeViewModel>()
+                .AddTransient<BrowserViewModel>()
                 .BuildServiceProvider();
 
             Ioc.Default.ConfigureServices(serviceProvider);

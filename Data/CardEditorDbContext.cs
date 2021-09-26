@@ -10,11 +10,9 @@ namespace Data
 {
     public class CardEditorDbContext : ICardEditorDbContext
     {
-        private const string MongoDbUrl = "mongodb://localhost:27017";
-        private const string CardEditorDbName = "CardEditor";
-
-        // Store collection name
+        // Store collection names
         private const string CardCollectionName = "cards";
+        private const string CardTypeCollectionName = "types";
 
         private readonly IMongoDatabase _database;
 
@@ -27,7 +25,8 @@ namespace Data
         // Store collection according to type
         private readonly Dictionary<Type, string> _collectionNames = new()
         {
-            { typeof(Card), CardCollectionName }
+            { typeof(Card), CardCollectionName },
+            { typeof(CardType), CardTypeCollectionName }
         };
 
         // Get collection that corresponds to the type
@@ -37,5 +36,18 @@ namespace Data
         }
 
         public IMongoCollection<Card> Cards => GetCollection<Card>();
+        public IMongoCollection<CardType> CardTypes => GetCollection<CardType>();
+
+        public async Task ClearDataBase()
+        {
+            var tasks = new List<Task>();
+            foreach (var collectionName in _collectionNames)
+            {
+                var dropTask = Task.Run(() => _database.DropCollectionAsync(collectionName.Value));
+                tasks.Add(dropTask);
+            }
+
+            await Task.WhenAll(tasks);
+        }
     }
 }
