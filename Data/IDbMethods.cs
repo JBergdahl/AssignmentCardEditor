@@ -11,12 +11,12 @@ namespace Data
     {
         Task<Card> AddOneCard(string cardName, string cardType, int attack, int defense, int speed, int mana, string imagePath);
         Task<CardType> AddOneCardType(string cardTypeName, int attackDefault, int defenseDefault, int speedDefault, int manaDefault);
-        Task<bool> FindCardByName(string cardName);
-        Task<bool> FindCardTypeByName(string typeName);
-        public CardType FindCardTypeByNameNormal(string typeName);
+        Task<bool> IsCardNameInDatabase(string cardName);
+        Task<bool> IsCardTypeNameInDatabase(string typeName);
+        public CardType GetCardTypeByName(string typeName);
         List<CardType> GetAllCardTypes();
         List<Card> GetAllCards();
-        void DeleteOneCard(string id);
+        void DeleteOneCardById(string id);
         Card GetCardByName(string cardName);
     }
 }

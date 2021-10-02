@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
@@ -11,21 +11,20 @@ using Microsoft.Win32;
 
 namespace AssignmentCardEditor.ViewModels
 {
-    public class CardViewModel : ObservableRecipient
+    public class CardViewModel : ObservableObject
     {
         private readonly IDbMethods _dbMethods;
+
         private int _attack;
         private bool _attackIsValid;
-        private string _cardTypeName;
-        private List<string> _cardTypeNames;
         private int _defense;
         private bool _defenseIsValid;
         private string _imagePath;
         private int _mana;
         private bool _manaIsValid;
         private string _name;
-
         private bool _nameIsValid;
+        private string _selectedCardType;
         private int _speed;
         private bool _speedIsValid;
 
@@ -35,7 +34,7 @@ namespace AssignmentCardEditor.ViewModels
             UploadImageCommand = new RelayCommand(OnUploadImageExecuted);
             SaveCommand = new AsyncRelayCommand(OnSaveExecuted, CanSave);
             ImportCommand = new RelayCommand(OnImportExecuted);
-            UpdateCommand = new RelayCommand(OnUpdateExecuted);
+            InitCardTypeComboBox();
         }
 
         public RelayCommand ImportCommand { get; set; }
@@ -57,31 +56,25 @@ namespace AssignmentCardEditor.ViewModels
             }
         }
 
-        public string CardTypeName
+        public string SelectedCardType
         {
-            get => _cardTypeName;
+            get => _selectedCardType;
             set
             {
-                if (SetProperty(ref _cardTypeName, value))
+                if (SetProperty(ref _selectedCardType, value))
                 {
-                    // Search database for card type + insert default values
-                    var cardType = _dbMethods.FindCardTypeByNameNormal(_cardTypeName);
-                    Attack = cardType.AttackDefault;
-                    CardTypeName = cardType.Name;
-                    Defense = cardType.DefenseDefault;
-                    Speed = cardType.SpeedDefault;
-                    Mana = cardType.ManaDefault;
+                    var cardType = _dbMethods.GetCardTypeByName(_selectedCardType);
+                    if (cardType != null)
+                    {
+                        SelectedCardType = cardType.Name;
+                        Attack = cardType.AttackDefault;
+                        Defense = cardType.DefenseDefault;
+                        Speed = cardType.SpeedDefault;
+                        Mana = cardType.ManaDefault;
+                    }
                 }
             }
         }
-
-        public List<string> CardTypeNames
-        {
-            get => _cardTypeNames;
-            set => SetProperty(ref _cardTypeNames, value);
-        }
-
-        public RelayCommand UpdateCommand { get; set; }
 
         public int Attack
         {
@@ -171,37 +164,44 @@ namespace AssignmentCardEditor.ViewModels
             set => SetProperty(ref _manaIsValid, value);
         }
 
-        public void OnUpdateExecuted()
+        private void InitCardTypeComboBox()
         {
             TypeNameCollection.Clear();
             var listCard = _dbMethods.GetAllCardTypes();
             foreach (var card in listCard) TypeNameCollection.Add(card.Name);
         }
 
+        public void OnCardTypeCollectionChanged(object? sender, string cardName)
+        {
+            TypeNameCollection.Add(cardName);
+        }
+
         private async Task OnSaveExecuted()
         {
-            // Check if card name already is in database
-            var nameIsTaken = await _dbMethods.FindCardByName(_name);
+            var nameIsTaken = await _dbMethods.IsCardNameInDatabase(_name);
 
             if (!nameIsTaken)
             {
-                // Add to database
-                await _dbMethods.AddOneCard(_name, _cardTypeName, _attack, _defense, _speed, _mana, _imagePath);
+                _selectedCardType ??= "None";
 
-                // Reset fields
+                var card = await _dbMethods.AddOneCard(_name, _selectedCardType, _attack, _defense, _speed, _mana,
+                    _imagePath);
+
                 Name = "Enter name";
                 Attack = 0;
                 Defense = 0;
                 Speed = 0;
                 Mana = 0;
                 ImagePath = "";
+                CardCollectionChanged?.Invoke(this, card.Name);
             }
             else
             {
-                // Name found in database
                 Name = "Name is taken";
             }
         }
+
+        public event EventHandler<string> CardCollectionChanged;
 
         private void OnUploadImageExecuted()
         {
@@ -215,7 +215,6 @@ namespace AssignmentCardEditor.ViewModels
             };
 
             if (op.ShowDialog() == true)
-                //ImagePath = new BitmapImage(new Uri(op.FileName));
                 ImagePath = op.FileName;
         }
 
@@ -224,7 +223,7 @@ namespace AssignmentCardEditor.ViewModels
         {
             var openFileDialog = new OpenFileDialog
             {
-                Filter = "Text|*.txt",
+                Filter = "json files (*.json)|*.json",
                 Title = "Open Card"
             };
 
@@ -239,7 +238,7 @@ namespace AssignmentCardEditor.ViewModels
                 if (card != null)
                 {
                     Name = card.Name;
-                    CardTypeName = card.CardType;
+                    SelectedCardType = card.CardType;
                     Attack = card.Attack;
                     Defense = card.Defense;
                     Speed = card.Speed;

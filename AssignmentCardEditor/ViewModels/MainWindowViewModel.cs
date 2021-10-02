@@ -1,38 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AssignmentCardEditor.Models;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Data;
 
 namespace AssignmentCardEditor.ViewModels
 {
     public class MainWindowViewModel : ObservableObject
     {
-        private CardViewModel _cardViewModel;
-        private CardTypeViewModel _cardTypeViewModel;
         private BrowserViewModel _browserViewModel;
+        private CardTypeViewModel _cardTypeViewModel;
+        private CardViewModel _cardViewModel;
 
         public MainWindowViewModel(IDbMethods dbMethods)
         {
-            _cardViewModel = new CardViewModel(dbMethods);
-            _cardTypeViewModel = new CardTypeViewModel(dbMethods);
             _browserViewModel = new BrowserViewModel(dbMethods);
+            CardViewModel = new CardViewModel(dbMethods);
+            CardTypeViewModel = new CardTypeViewModel(dbMethods);
         }
 
         public CardViewModel CardViewModel
         {
             get => _cardViewModel;
-            set => SetProperty(ref _cardViewModel, value);
+            set
+            {
+                if (_cardViewModel is not null)
+                    _cardViewModel.CardCollectionChanged -= BrowserViewModel.OnCardCollectionChanged;
+
+                if (SetProperty(ref _cardViewModel, value))
+                    if (_cardViewModel is not null)
+                        _cardViewModel.CardCollectionChanged += BrowserViewModel.OnCardCollectionChanged;
+            }
         }
 
         public CardTypeViewModel CardTypeViewModel
         {
             get => _cardTypeViewModel;
-            set => SetProperty(ref _cardTypeViewModel, value);
+            set
+            {
+                if (_cardTypeViewModel is not null)
+                    _cardTypeViewModel.CardTypeCollectionChanged -= CardViewModel.OnCardTypeCollectionChanged;
+
+                if (SetProperty(ref _cardTypeViewModel, value))
+                    if (_cardTypeViewModel is not null)
+                        _cardTypeViewModel.CardTypeCollectionChanged += CardViewModel.OnCardTypeCollectionChanged;
+            }
         }
 
         public BrowserViewModel BrowserViewModel

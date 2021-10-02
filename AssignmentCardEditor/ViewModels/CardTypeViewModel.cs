@@ -1,16 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.Mvvm.Messaging.Messages;
 using Data;
 
 namespace AssignmentCardEditor.ViewModels
 {
-    public class CardTypeViewModel : ObservableRecipient
+    public class CardTypeViewModel : ObservableObject
     {
         private readonly IDbMethods _dbMethods;
+
         private int _attackDefault;
         private bool _attackIsValid;
         private int _defenseDefault;
@@ -18,7 +17,6 @@ namespace AssignmentCardEditor.ViewModels
         private int _manaDefault;
         private bool _manaIsValid;
         private string _name;
-
         private bool _nameIsValid;
         private int _speedDefault;
         private bool _speedIsValid;
@@ -30,8 +28,6 @@ namespace AssignmentCardEditor.ViewModels
         }
 
         public AsyncRelayCommand SaveCommand { get; set; }
-
-        public List<string> CardTypeCollection { get; set; } = new();
 
         public string Name
         {
@@ -136,14 +132,13 @@ namespace AssignmentCardEditor.ViewModels
         private async Task OnSaveExecuted()
         {
             // Check if card type name already is in database
-            var nameIsTaken = await _dbMethods.FindCardTypeByName(_name);
+            var nameIsTaken = await _dbMethods.IsCardTypeNameInDatabase(_name);
 
             if (!nameIsTaken)
             {
                 // Add to database
                 var card = await _dbMethods.AddOneCardType(_name, _attackDefault, _defenseDefault, _speedDefault,
                     _manaDefault);
-                CardTypeCollection.Add(card.Name);
 
                 // Reset fields
                 Name = "Enter type name";
@@ -151,6 +146,7 @@ namespace AssignmentCardEditor.ViewModels
                 DefenseDefault = 0;
                 SpeedDefault = 0;
                 ManaDefault = 0;
+                CardTypeCollectionChanged?.Invoke(this, card.Name);
             }
             else
             {
@@ -158,6 +154,8 @@ namespace AssignmentCardEditor.ViewModels
                 Name = "Name is taken";
             }
         }
+
+        public event EventHandler<string> CardTypeCollectionChanged;
 
         private bool ValidName(string name)
         {

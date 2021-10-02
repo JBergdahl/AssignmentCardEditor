@@ -54,15 +54,6 @@
                 ItemsSource="{Binding CardNameCollection}"
                 SelectedItem="{Binding SelectedCard}" />
         </Border>
-        <Button
-            Grid.Row="3"
-            Width="80"
-            Height="20"
-            Margin="5,4,5,4"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Command="{Binding UpdateCommand}"
-            Content="Update List" />
         <Grid
             Grid.Row="4"
             HorizontalAlignment="Center">
@@ -142,6 +133,7 @@
         </Grid>
         <Border
             Grid.Row="5"
+            Height="250"
             Margin="5"
             BorderBrush="DimGray"
             BorderThickness="2">

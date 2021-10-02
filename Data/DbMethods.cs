@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using CardEditor.Domain;
 using MongoDB.Driver;
@@ -17,7 +15,8 @@ namespace Data
             _context = context;
         }
 
-        public async Task<Card> AddOneCard(string cardName, string cardType, int attack, int defense, int speed, int mana, string imagePath)
+        public async Task<Card> AddOneCard(string cardName, string cardType, int attack, int defense, int speed,
+            int mana, string imagePath)
         {
             var card = new Card
             {
@@ -35,7 +34,8 @@ namespace Data
             return card;
         }
 
-        public async Task<CardType> AddOneCardType(string cardTypeName, int attackDefault, int defenseDefault, int speedDefault, int manaDefault)
+        public async Task<CardType> AddOneCardType(string cardTypeName, int attackDefault, int defenseDefault,
+            int speedDefault, int manaDefault)
         {
             var cardType = new CardType
             {
@@ -51,19 +51,19 @@ namespace Data
             return cardType;
         }
 
-        public async Task<bool> FindCardByName(string cardName)
+        public async Task<bool> IsCardNameInDatabase(string cardName)
         {
             var cardResult = await _context.Cards.Find(c => c.Name == cardName).FirstOrDefaultAsync();
             return cardResult != null;
         }
 
-        public async Task<bool> FindCardTypeByName(string typeName)
+        public async Task<bool> IsCardTypeNameInDatabase(string typeName)
         {
             var cardResult = await _context.CardTypes.Find(c => c.Name == typeName).FirstOrDefaultAsync();
             return cardResult != null;
         }
 
-        public CardType FindCardTypeByNameNormal(string typeName)
+        public CardType GetCardTypeByName(string typeName)
         {
             var cardResult = _context.CardTypes.Find(c => c.Name == typeName).FirstOrDefault();
             return cardResult;
@@ -71,7 +71,8 @@ namespace Data
 
         public List<CardType> GetAllCardTypes()
         {
-            return _context.CardTypes.AsQueryable().ToList();
+            var cardTypes = _context.CardTypes.AsQueryable().ToList();
+            return cardTypes;
         }
 
         public List<Card> GetAllCards()
@@ -79,7 +80,7 @@ namespace Data
             return _context.Cards.AsQueryable().ToList();
         }
 
-        public void DeleteOneCard(string name)
+        public void DeleteOneCardById(string name)
         {
             _context.Cards.DeleteOne(c => c.Name == name);
         }

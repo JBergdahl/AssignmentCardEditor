@@ -88,19 +88,7 @@
                     Grid.Column="1"
                     Margin="5,2,5,2"
                     ItemsSource="{Binding TypeNameCollection}"
-                    SelectedValue="{Binding CardTypeName}" />
-                <Button
-                    Grid.Row="2"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Width="100"
-                    Height="20"
-                    Margin="5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Command="{Binding UpdateCommand}"
-                    Content="Update type list"
-                    FontWeight="DemiBold" />
+                    SelectedValue="{Binding SelectedCardType}" />
             </Grid>
             <Grid
                 Grid.Row="2"
@@ -178,6 +166,7 @@
             </Grid>
             <Border
                 Grid.Row="3"
+                Height="250"
                 Margin="5"
                 BorderBrush="DimGray"
                 BorderThickness="2">

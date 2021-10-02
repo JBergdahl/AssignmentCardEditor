@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Data.OleDb;
 using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -11,6 +12,7 @@ namespace AssignmentCardEditor.ViewModels
     public class BrowserViewModel : ObservableRecipient
     {
         private readonly IDbMethods _dbMethods;
+
         private int _attack;
         private string _cardType;
         private int _defense;
@@ -23,14 +25,13 @@ namespace AssignmentCardEditor.ViewModels
         public BrowserViewModel(IDbMethods dbMethods)
         {
             _dbMethods = dbMethods;
+            InitCardCollectionList();
             DeleteCommand = new RelayCommand(OnDeleteCommandExecuted);
             ExportCommand = new RelayCommand(OnExportCommandExecuted);
-            UpdateCommand = new RelayCommand(OnUpdateCommandExecuted);
         }
 
         public RelayCommand DeleteCommand { get; set; }
         public RelayCommand ExportCommand { get; set; }
-        public RelayCommand UpdateCommand { get; set; }
 
         public ObservableCollection<string> CardNameCollection { get; set; } = new();
 
@@ -98,38 +99,65 @@ namespace AssignmentCardEditor.ViewModels
             set => SetProperty(ref _imagePath, value);
         }
 
-        public void OnDeleteCommandExecuted()
+        private void InitCardCollectionList()
         {
-            _dbMethods.DeleteOneCard(_selectedCard);
+            UpdateCardList();
         }
 
-        public void OnUpdateCommandExecuted()
+        public void OnDeleteCommandExecuted()
+        {
+            if (_selectedCard != null)
+            {
+                _dbMethods.DeleteOneCardById(_selectedCard);
+                UpdateCardList();
+            }
+        }
+
+        public void UpdateCardList()
         {
             CardNameCollection.Clear();
             var listCard = _dbMethods.GetAllCards();
             foreach (var card in listCard) CardNameCollection.Add(card.Name);
+            Name = "";
+            CardType = "";
+            Attack = 0;
+            Defense = 0;
+            Speed = 0;
+            Mana = 0;
+            ImagePath = "";
         }
 
         public void OnExportCommandExecuted()
         {
-            var saveFileDialog = new SaveFileDialog
+            if (_selectedCard != null)
             {
-                Filter = "Text|*.txt",
-                Title = "Save Card"
-            };
-            saveFileDialog.ShowDialog();
+                var saveFileDialog = new SaveFileDialog
+                {
+                    AddExtension = true,
+                    Filter = "json files (*.json)|*.json",
+                    Title = "Save Card",
+                    FileName = $"character_{_name}"
+                };
+                var ok = saveFileDialog.ShowDialog();
 
-            if (saveFileDialog.FileName != "")
-            {
-                var fs = (FileStream)saveFileDialog.OpenFile();
-                var card = _dbMethods.GetCardByName(_selectedCard);
-                var cardSerialized = JsonSerializer.Serialize(card);
-                var path = fs.Name;
+                if (saveFileDialog.FileName != "" && ok is true)
+                {
+                    var fs = (FileStream)saveFileDialog.OpenFile();
+                    var card = _dbMethods.GetCardByName(_selectedCard);
+                    var cardSerialized = JsonSerializer.Serialize(card);
+                    var path = fs.Name;
 
-                fs.Close();
+                    fs.Close();
 
-                File.WriteAllText(path, cardSerialized);
+                    File.WriteAllText(path, cardSerialized);
+                }
             }
+        }
+
+        public void OnCardCollectionChanged(object? sender, string cardName)
+        {
+            var card = _dbMethods.GetCardByName(cardName);
+            CardNameCollection.Add(cardName);
         }
     }
 }
