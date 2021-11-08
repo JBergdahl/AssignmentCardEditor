@@ -16,7 +16,7 @@ namespace Data
         }
 
         public async Task<Card> AddOneCard(string cardName, string cardType, int attack, int defense, int speed,
-            int mana, string imagePath)
+            int mana, string imagePath, string description)
         {
             var card = new Card
             {
@@ -26,7 +26,8 @@ namespace Data
                 Defense = defense,
                 Speed = speed,
                 Mana = mana,
-                ImagePath = imagePath
+                ImagePath = imagePath,
+                Description = description
             };
 
             await _context.Cards.InsertOneAsync(card);
@@ -53,13 +54,13 @@ namespace Data
 
         public async Task<bool> IsCardNameInDatabase(string cardName)
         {
-            var cardResult = await _context.Cards.Find(c => c.Name == cardName).FirstOrDefaultAsync();
+            var cardResult = await _context.Cards.Find(c => c.Name.ToUpper() == cardName.ToUpper()).FirstOrDefaultAsync();
             return cardResult != null;
         }
 
         public async Task<bool> IsCardTypeNameInDatabase(string typeName)
         {
-            var cardResult = await _context.CardTypes.Find(c => c.Name == typeName).FirstOrDefaultAsync();
+            var cardResult = await _context.CardTypes.Find(c => c.Name.ToUpper() == typeName.ToUpper()).FirstOrDefaultAsync();
             return cardResult != null;
         }
 
@@ -80,9 +81,14 @@ namespace Data
             return _context.Cards.AsQueryable().ToList();
         }
 
-        public void DeleteOneCardById(string name)
+        public void DeleteOneCardByName(string name)
         {
             _context.Cards.DeleteOne(c => c.Name == name);
+        }
+
+        public void DeleteOneCardTypeByName(string name)
+        {
+            _context.CardTypes.DeleteOne(c => c.Name == name);
         }
 
         public Card GetCardByName(string cardName)

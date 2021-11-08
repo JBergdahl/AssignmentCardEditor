@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -25,9 +26,25 @@ namespace AssignmentCardEditor.ViewModels
         {
             _dbMethods = dbMethods;
             SaveCommand = new AsyncRelayCommand(OnSaveExecuted, CanSave);
+            DeleteCommand = new RelayCommand(OnDeleteCommandExecuted);
+            UpdateCardTypeList();
         }
 
+        public RelayCommand DeleteCommand { get; set; }
+
         public AsyncRelayCommand SaveCommand { get; set; }
+
+        public void OnDeleteCommandExecuted()
+        {
+            if (_selectedCardType != null)
+            {
+                var cardName = _selectedCardType;
+                _dbMethods.DeleteOneCardTypeByName(cardName);
+                CardTypeCollectionChanged?.Invoke(this, cardName);
+                CardTypeNameCollection.Remove(cardName);
+                UpdateCardTypeList();
+            }
+        }
 
         public string Name
         {
@@ -129,15 +146,50 @@ namespace AssignmentCardEditor.ViewModels
             return NameIsValid && AttackIsValid && DefenseIsValid && SpeedIsValid && ManaIsValid;
         }
 
+        public ObservableCollection<string> CardTypeNameCollection { get; set; } = new();
+        private string _selectedCardType;
+        public string SelectedCardType
+        {
+            get => _selectedCardType;
+            set
+            {
+                if (SetProperty(ref _selectedCardType, value))
+                {
+                    var cardType = _dbMethods.GetCardTypeByName(_selectedCardType);
+                    if (cardType != null)
+                    {
+                        Name = cardType.Name;
+                        AttackDefault = cardType.AttackDefault;
+                        DefenseDefault = cardType.DefenseDefault;
+                        SpeedDefault = cardType.SpeedDefault;
+                        ManaDefault = cardType.ManaDefault;
+                    }
+                }
+            }
+        }
+
+        private void UpdateCardTypeList()
+        {
+            CardTypeNameCollection.Clear();
+            var listCardTypes = _dbMethods.GetAllCardTypes();
+            foreach (var cardType in listCardTypes)
+            {
+                CardTypeNameCollection.Add(cardType.Name);
+            }
+        }
+
         private async Task OnSaveExecuted()
         {
-            // Check if card type name already is in database
-            var nameIsTaken = await _dbMethods.IsCardTypeNameInDatabase(_name);
+            var nameTrimmed = Name.Trim();
+            var nameFormatted = nameTrimmed.Replace("  ", " ");
 
-            if (!nameIsTaken)
+            // Check if card type name already is in database
+            var nameIsTaken = await _dbMethods.IsCardTypeNameInDatabase(nameFormatted);
+
+            if (!nameIsTaken && ValidName(nameFormatted))
             {
                 // Add to database
-                var card = await _dbMethods.AddOneCardType(_name, _attackDefault, _defenseDefault, _speedDefault,
+                var card = await _dbMethods.AddOneCardType(nameFormatted, _attackDefault, _defenseDefault, _speedDefault,
                     _manaDefault);
 
                 // Reset fields
@@ -147,11 +199,12 @@ namespace AssignmentCardEditor.ViewModels
                 SpeedDefault = 0;
                 ManaDefault = 0;
                 CardTypeCollectionChanged?.Invoke(this, card.Name);
+                UpdateCardTypeList();
             }
             else
             {
                 // Name found in database
-                Name = "Name is taken";
+                Name = "Name is taken or invalid";
             }
         }
 

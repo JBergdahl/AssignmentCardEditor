@@ -34,5 +34,8 @@ namespace CardEditor.Domain
 
         [BsonElement("mana")]
         public int Mana { get; set; }
+
+        [BsonElement("description")]
+        public string Description { get; set; }
     }
 }

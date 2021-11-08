@@ -1,6 +1,8 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data.OleDb;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -21,6 +23,8 @@ namespace AssignmentCardEditor.ViewModels
         private string _name;
         private string _selectedCard;
         private int _speed;
+        private string _nameSearch;
+        private string _description;
 
         public BrowserViewModel(IDbMethods dbMethods)
         {
@@ -34,6 +38,7 @@ namespace AssignmentCardEditor.ViewModels
         public RelayCommand ExportCommand { get; set; }
 
         public ObservableCollection<string> CardNameCollection { get; set; } = new();
+        public ObservableCollection<string> TempCardNameCollection { get; set; } = new();
 
         public string SelectedCard
         {
@@ -52,9 +57,48 @@ namespace AssignmentCardEditor.ViewModels
                         Speed = card.Speed;
                         Mana = card.Mana;
                         ImagePath = card.ImagePath;
+                        Description = FormatDescriptionText(card.Description);
                     }
                 }
             }
+        }
+
+        private string FormatDescriptionText(string text)
+        {
+            if (text.Length >= 23)
+            {
+                var formattedText = "";
+                var currentWord = "";
+                var lineLength = 30;
+                var counter = 0;
+
+                for (var i = 0; i < text.Length; i++)
+                {
+                    currentWord += text.ElementAt(i);
+
+                    if (text.ElementAt(i) == ' ')
+                    {
+                        if (counter >= lineLength)
+                        {
+                            formattedText += System.Environment.NewLine;
+                            counter = 0;
+                        }
+                        else
+                        {
+                            formattedText += currentWord;
+                            currentWord = "";
+                        }
+                    }
+
+                    counter++;
+                }
+
+                if (!string.IsNullOrWhiteSpace(currentWord)) formattedText += currentWord;
+
+                return formattedText;
+            }
+
+            return text;
         }
 
         public string Name
@@ -99,6 +143,39 @@ namespace AssignmentCardEditor.ViewModels
             set => SetProperty(ref _imagePath, value);
         }
 
+        public string Description
+        {
+            get => _description;
+            set => SetProperty(ref _description, value);
+        }
+
+        public string NameSearch
+        {
+            get => _nameSearch;
+            set
+            {
+                if (SetProperty(ref _nameSearch, value))
+                {
+                    CardNameCollection.Clear();
+
+                    if (_nameSearch.Equals("") || _nameSearch.Length == 0)
+                    {
+                        foreach (var cardName in TempCardNameCollection)
+                        {
+                            CardNameCollection.Add(cardName);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var card in TempCardNameCollection.Where(cardName => cardName.ToUpper().StartsWith(_nameSearch.ToUpper())))
+                        {
+                            CardNameCollection.Add(card);
+                        };
+                    }
+                }
+            }
+        }
+
         private void InitCardCollectionList()
         {
             UpdateCardList();
@@ -108,8 +185,10 @@ namespace AssignmentCardEditor.ViewModels
         {
             if (_selectedCard != null)
             {
-                _dbMethods.DeleteOneCardById(_selectedCard);
-                UpdateCardList();
+                var cardName = _selectedCard;
+                _dbMethods.DeleteOneCardByName(cardName);
+                CardNameCollection.Remove(cardName);
+                TempCardNameCollection.Remove(cardName);
             }
         }
 
@@ -117,7 +196,11 @@ namespace AssignmentCardEditor.ViewModels
         {
             CardNameCollection.Clear();
             var listCard = _dbMethods.GetAllCards();
-            foreach (var card in listCard) CardNameCollection.Add(card.Name);
+            foreach (var card in listCard)
+            {
+                CardNameCollection.Add(card.Name);
+                TempCardNameCollection.Add(card.Name);
+            }
             Name = "";
             CardType = "";
             Attack = 0;
@@ -125,6 +208,7 @@ namespace AssignmentCardEditor.ViewModels
             Speed = 0;
             Mana = 0;
             ImagePath = "";
+            Description = "";
         }
 
         public void OnExportCommandExecuted()
@@ -157,7 +241,8 @@ namespace AssignmentCardEditor.ViewModels
         public void OnCardCollectionChanged(object? sender, string cardName)
         {
             var card = _dbMethods.GetCardByName(cardName);
-            CardNameCollection.Add(cardName);
+            CardNameCollection.Add(card.Name);
+            TempCardNameCollection.Add(card.Name);
         }
     }
 }

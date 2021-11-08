@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,21 +16,13 @@ using System.Windows.Shapes;
 namespace AssignmentCardEditor.Views
 {
     /// <summary>
-    /// Interaction logic for BrowserView.xaml
+    /// Interaction logic for CardTypeBrowserView.xaml
     /// </summary>
-    public partial class BrowserView : UserControl
+    public partial class CardTypeBrowserView : UserControl
     {
-        public BrowserView()
+        public CardTypeBrowserView()
         {
             InitializeComponent();
-        }
-
-        private void SearchInput_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            if (!Regex.IsMatch(e.Text, "^[a-zA-Z0-9_.-]+$"))
-            {
-                e.Handled = true;
-            }
         }
     }
 }

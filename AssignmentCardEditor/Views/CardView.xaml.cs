@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,6 +24,22 @@ namespace AssignmentCardEditor.Views
         public CardView()
         {
             InitializeComponent();
+        }
+
+        private void CardNumbers_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            if (!Regex.IsMatch(e.Text, "^[0-9]+$"))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void CardText_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            if (!Regex.IsMatch(e.Text, "^[a-zA-Z0-9_.-]+$"))
+            {
+                e.Handled = true;
+            }
         }
     }
 }

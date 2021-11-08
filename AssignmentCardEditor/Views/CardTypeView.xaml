@@ -17,47 +17,50 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Border
             Grid.Row="0"
-            BorderBrush="Green"
+            Margin="0,0,0,20"
+            BorderBrush="#e6e6e6e6"
             BorderThickness="2">
             <Grid>
                 <Rectangle
                     Grid.Row="0"
-                    Fill="PaleGreen" />
+                    Height="35"
+                    Fill="#3d4c41" />
                 <TextBlock
                     Grid.Row="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    FontSize="18"
+                    FontSize="20"
                     FontWeight="DemiBold"
+                    Foreground="#e6e6e6e6"
                     Text="Create New Type" />
             </Grid>
         </Border>
         <Grid
             Grid.Row="1"
-            Margin="5">
+            Margin="5,5,5,20"
+            HorizontalAlignment="Center">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
             <TextBlock
                 Grid.Row="0"
                 Grid.Column="0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
                 FontSize="14"
-                FontWeight="DemiBold"
+                Foreground="White"
                 Text="Name:" />
             <TextBox
                 Grid.Row="0"
                 Grid.Column="1"
+                Width="200"
                 Margin="5,2,5,2"
+                PreviewTextInput="CardTypeText_OnPreviewTextInput"
                 Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}">
                 <TextBox.Style>
                     <Style TargetType="{x:Type TextBox}">
@@ -79,7 +82,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 FontSize="14"
-                FontWeight="DemiBold"
+                Foreground="White"
                 Text="Default Stats:" />
         </Grid>
         <Grid
@@ -119,50 +122,159 @@
             <TextBlock
                 Grid.Row="0"
                 Grid.Column="0"
+                Foreground="White"
                 Text="Attack:" />
             <TextBox
                 Grid.Row="0"
                 Grid.Column="1"
+                KeyUp="UIElement_OnKeyUp"
+                PreviewTextInput="CardTypeNumbers_OnPreviewTextInput"
                 Tag="{Binding AttackIsValid}"
                 Text="{Binding AttackDefault, UpdateSourceTrigger=PropertyChanged}" />
 
             <TextBlock
                 Grid.Row="0"
                 Grid.Column="2"
+                Foreground="White"
                 Text="Defense:" />
             <TextBox
                 Grid.Row="0"
                 Grid.Column="3"
+                KeyUp="UIElement_OnKeyUp"
+                PreviewTextInput="CardTypeNumbers_OnPreviewTextInput"
                 Tag="{Binding DefenseIsValid}"
                 Text="{Binding DefenseDefault, UpdateSourceTrigger=PropertyChanged}" />
 
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="0"
+                Foreground="White"
                 Text="Speed:" />
             <TextBox
                 Grid.Row="1"
                 Grid.Column="1"
+                KeyUp="UIElement_OnKeyUp"
+                PreviewTextInput="CardTypeNumbers_OnPreviewTextInput"
                 Tag="{Binding SpeedIsValid}"
                 Text="{Binding SpeedDefault, UpdateSourceTrigger=PropertyChanged}" />
 
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="2"
+                Foreground="White"
                 Text="Mana:" />
             <TextBox
                 Grid.Row="1"
                 Grid.Column="3"
+                KeyUp="UIElement_OnKeyUp"
+                PreviewTextInput="CardTypeNumbers_OnPreviewTextInput"
                 Tag="{Binding ManaIsValid}"
                 Text="{Binding ManaDefault, UpdateSourceTrigger=PropertyChanged}" />
         </Grid>
         <Grid Grid.Row="4">
             <Button
                 Width="80"
-                Height="20"
-                Margin="5,4,5,4"
+                Height="30"
+                Margin="5,20,5,4"
                 Command="{Binding SaveCommand}"
-                Content="Save Type" />
+                Content="Save Type"
+                FontSize="14"
+                FontWeight="DemiBold">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border
+                                        x:Name="Border"
+                                        Background="{TemplateBinding Background}">
+                                        <ContentPresenter
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#00b300" />
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="False">
+                                            <Setter TargetName="Border" Property="Background" Value="DarkSeaGreen" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5" />
+                    </Style>
+                </Button.Resources>
+            </Button>
         </Grid>
+        <TextBlock
+            Grid.Row="5"
+            Margin="0,20,0,0"
+            HorizontalAlignment="Center"
+            FontSize="14"
+            Foreground="White"
+            Text="Card Types In Database:" />
+        <Grid Grid.Row="6">
+            <Border
+                Margin="5"
+                BorderBrush="#3d4c41"
+                BorderThickness="2">
+                <ListBox
+                    Padding="0,0,0,5"
+                    FontSize="14"
+                    ItemsSource="{Binding CardTypeNameCollection}"
+                    SelectedItem="{Binding SelectedCardType}" />
+            </Border>
+        </Grid>
+        <Button
+            Grid.Row="7"
+            Width="120"
+            Height="30"
+            Margin="5,10,5,20"
+            Command="{Binding DeleteCommand}"
+            Content="Delete Card Type"
+            FontSize="14"
+            FontWeight="DemiBold">
+            <Button.Style>
+                <Style
+                    BasedOn="{StaticResource {x:Type Button}}"
+                    TargetType="{x:Type Button}">
+                    <Setter Property="Background" Value="LightBlue" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Border
+                                    x:Name="Border"
+                                    Background="{TemplateBinding Background}">
+                                    <ContentPresenter
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="#eb5353" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="False">
+                                        <Setter TargetName="Border" Property="Background" Value="LightCoral" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Button.Style>
+            <!--
+            <Button.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="5" />
+                </Style>
+            </Button.Resources>
+            -->
+        </Button>
     </Grid>
 </UserControl>

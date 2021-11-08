@@ -8,12 +8,20 @@ namespace AssignmentCardEditor.ViewModels
         private BrowserViewModel _browserViewModel;
         private CardTypeViewModel _cardTypeViewModel;
         private CardViewModel _cardViewModel;
+        private CardTypeBrowserViewModel _cardTypeBrowserViewModel;
 
         public MainWindowViewModel(IDbMethods dbMethods)
         {
             _browserViewModel = new BrowserViewModel(dbMethods);
+            _cardTypeBrowserViewModel = new CardTypeBrowserViewModel(dbMethods);
             CardViewModel = new CardViewModel(dbMethods);
             CardTypeViewModel = new CardTypeViewModel(dbMethods);
+        }
+
+        public CardTypeBrowserViewModel CardTypeBrowserViewModel
+        {
+            get => _cardTypeBrowserViewModel;
+            set => SetProperty(ref _cardTypeBrowserViewModel, value);
         }
 
         public CardViewModel CardViewModel

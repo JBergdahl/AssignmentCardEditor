@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CardEditor.Domain;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Data;
 using Microsoft.Win32;
+using MongoDB.Driver;
 
 namespace AssignmentCardEditor.ViewModels
 {
@@ -27,6 +31,8 @@ namespace AssignmentCardEditor.ViewModels
         private string _selectedCardType;
         private int _speed;
         private bool _speedIsValid;
+        private string _description;
+        private bool _descriptionIsValid;
 
         public CardViewModel(IDbMethods dbMethods)
         {
@@ -35,6 +41,7 @@ namespace AssignmentCardEditor.ViewModels
             SaveCommand = new AsyncRelayCommand(OnSaveExecuted, CanSave);
             ImportCommand = new RelayCommand(OnImportExecuted);
             InitCardTypeComboBox();
+            InitInputFields();
         }
 
         public RelayCommand ImportCommand { get; set; }
@@ -42,6 +49,12 @@ namespace AssignmentCardEditor.ViewModels
         public RelayCommand UploadImageCommand { get; set; }
 
         public ObservableCollection<string> TypeNameCollection { get; set; } = new();
+
+        private void InitInputFields()
+        {
+            Name = "Enter name";
+            Description = "Eg: Whenever 'Name' attacks, it gains +10 defense until end of turn";
+        }
 
         public string Name
         {
@@ -128,6 +141,19 @@ namespace AssignmentCardEditor.ViewModels
             }
         }
 
+        public string Description
+        {
+            get => _description;
+            set
+            {
+                if (SetProperty(ref _description, value))
+                {
+                    DescriptionIsValid = ValidDescription(_description);
+                    SaveCommand.NotifyCanExecuteChanged();
+                }
+            }
+        }
+
         public string ImagePath
         {
             get => _imagePath;
@@ -164,6 +190,12 @@ namespace AssignmentCardEditor.ViewModels
             set => SetProperty(ref _manaIsValid, value);
         }
 
+        public bool DescriptionIsValid
+        {
+            get => _descriptionIsValid;
+            set => SetProperty(ref _descriptionIsValid, value);
+        }
+
         private void InitCardTypeComboBox()
         {
             TypeNameCollection.Clear();
@@ -173,27 +205,47 @@ namespace AssignmentCardEditor.ViewModels
 
         public void OnCardTypeCollectionChanged(object? sender, string cardName)
         {
-            TypeNameCollection.Add(cardName);
+            if (TypeNameCollection.Contains(cardName))
+            {
+                TypeNameCollection.Remove(cardName);
+            }
+            else
+            {
+                TypeNameCollection.Add(cardName);
+            }
         }
 
         private async Task OnSaveExecuted()
         {
-            var nameIsTaken = await _dbMethods.IsCardNameInDatabase(_name);
+            var nameTrimmed = Name.Trim();
+            var nameFormatted = nameTrimmed.Replace("  ", " ");
+            var descriptionTrimmed = Description.Trim();
+            var descriptionFormatted = descriptionTrimmed.Replace("  ", " ");
 
-            if (!nameIsTaken)
+            var nameIsTaken = await _dbMethods.IsCardNameInDatabase(nameFormatted);
+
+            if (!nameIsTaken && ValidName(nameFormatted) && ValidDescription(descriptionFormatted))
             {
-                _selectedCardType ??= "None";
+                if (!string.IsNullOrEmpty(nameFormatted) && !string.IsNullOrEmpty(descriptionFormatted))
+                {
+                    var card = await _dbMethods.AddOneCard(nameFormatted, _selectedCardType, _attack, _defense, _speed, _mana,
+                        _imagePath, descriptionFormatted);
 
-                var card = await _dbMethods.AddOneCard(_name, _selectedCardType, _attack, _defense, _speed, _mana,
-                    _imagePath);
-
-                Name = "Enter name";
-                Attack = 0;
-                Defense = 0;
-                Speed = 0;
-                Mana = 0;
-                ImagePath = "";
-                CardCollectionChanged?.Invoke(this, card.Name);
+                    Name = "Enter name";
+                    SelectedCardType = null;
+                    Attack = 0;
+                    Defense = 0;
+                    Speed = 0;
+                    Mana = 0;
+                    ImagePath = "";
+                    Description = "Eg: Whenever 'Name' attacks, it gains +10 defense until end of turn";
+                    CardCollectionChanged?.Invoke(this, card.Name);
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(nameFormatted)) Name = "Name is invalid!";
+                    if (string.IsNullOrEmpty(descriptionFormatted)) Name = "Description is invalid!";
+                }
             }
             else
             {
@@ -214,8 +266,18 @@ namespace AssignmentCardEditor.ViewModels
                          "Portable Network Graphic (*.png)|*.png"
             };
 
+            var localAppFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
             if (op.ShowDialog() == true)
-                ImagePath = op.FileName;
+            {
+                Directory.CreateDirectory(localAppFolder + "\\CardEditor");
+                Directory.CreateDirectory(localAppFolder + "\\CardEditor\\images");
+                var source = op.FileName;
+                var path = localAppFolder + "\\CardEditor\\images\\" + op.SafeFileName;
+                File.Copy(source, path);
+
+                ImagePath = path;
+            }
         }
 
 
@@ -244,18 +306,25 @@ namespace AssignmentCardEditor.ViewModels
                     Speed = card.Speed;
                     Mana = card.Mana;
                     ImagePath = card.ImagePath;
+                    Description = card.Description;
                 }
             }
         }
 
         private bool CanSave()
         {
-            return NameIsValid && AttackIsValid && DefenseIsValid && SpeedIsValid && ManaIsValid;
+            return NameIsValid && AttackIsValid && DefenseIsValid && SpeedIsValid && ManaIsValid && DescriptionIsValid && SelectedCardType != null;
         }
 
         private bool ValidName(string name)
         {
-            return name?.Length is > 1 and < 20 && !name.Equals("Enter name") && !name.Equals("Name is taken");
+            return name?.Length is > 1 and < 20 && !name.Equals("Enter name") && !name.Equals("Name is taken") && !name.Equals("Name is invalid!");
+        }
+
+        private bool ValidDescription(string description)
+        {
+            return description?.Length is > 0 and < 100 && !description.Equals(
+                "Eg: Whenever 'Name' attacks, it gains +10 defense until end of turn") && !description.Equals("Description is invalid!");
         }
 
         private bool ValidAttack(int attack)

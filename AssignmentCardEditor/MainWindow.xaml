@@ -15,23 +15,136 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+        <Rectangle
+            Grid.ColumnSpan="5"
+            Opacity="1"
+            Stretch="Fill">
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                    <GradientStop Offset="0.0" Color="#3d4c41" />
+                    <GradientStop Offset="0.8" Color="#999999" />
+                    <GradientStop Offset="1.0" Color="#e6e6e6" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
         <Grid
             Grid.Row="0"
             Grid.Column="0">
-            <views:CardView DataContext="{Binding CardViewModel}" />
+            <views:CardView
+                x:Name="CardView"
+                DataContext="{Binding CardViewModel}" />
+            <Rectangle
+                x:Name="CardRectangle"
+                Opacity="1"
+                Stretch="Fill">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Offset="0.0" Color="#3d4c41" />
+                        <GradientStop Offset="0.5" Color="#999999" />
+                        <GradientStop Offset="1.0" Color="#e6e6e6" />
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Button
+                x:Name="CreateNewCardBtn"
+                Click="CreateNewCardBtn_OnClick"
+                Opacity="0.5" />
+            <TextBlock
+                x:Name="CardText"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="30"
+                FontWeight="DemiBold"
+                Foreground="#3d4c41"
+                IsHitTestVisible="False"
+                Text="Create card" />
         </Grid>
-        <Grid
-            Grid.Row="0"
-            Grid.Column="1">
-            <views:CardTypeView DataContext="{Binding CardTypeViewModel}" />
+        <Border
+            Grid.Column="1"
+            BorderBrush="#e6e6e6e6"
+            BorderThickness="1">
+            <GridSplitter
+                Width="5"
+                Background="#3d4c41"
+                ResizeBehavior="PreviousAndNext"
+                ResizeDirection="Columns" />
+        </Border>
+        <Grid Grid.Column="2">
+            <views:CardTypeView
+                x:Name="CardTypeView"
+                Grid.Row="0"
+                DataContext="{Binding CardTypeViewModel}" />
+            <Rectangle
+                x:Name="CardTypeRectangle"
+                Opacity="1"
+                Stretch="Fill">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Offset="0.0" Color="#3d4c41" />
+                        <GradientStop Offset="0.5" Color="#999999" />
+                        <GradientStop Offset="1.0" Color="#e6e6e6" />
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Button
+                x:Name="CreateNewCardTypeBtn"
+                Grid.Row="0"
+                Click="CreateNewCardTypeBtn_OnClick"
+                Opacity="0.5" />
+            <TextBlock
+                x:Name="CardTypeText"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="30"
+                FontWeight="DemiBold"
+                Foreground="#3d4c41"
+                IsHitTestVisible="False"
+                Text="Create card type" />
         </Grid>
-        <Grid
-            Grid.Row="0"
-            Grid.Column="2">
-            <views:BrowserView DataContext="{Binding BrowserViewModel}" />
+        <Border
+            Grid.Column="3"
+            BorderBrush="#e6e6e6e6"
+            BorderThickness="1">
+            <GridSplitter
+                Width="6"
+                Background="#3d4c41"
+                ResizeBehavior="PreviousAndNext"
+                ResizeDirection="Columns" />
+        </Border>
+        <Grid Grid.Column="4">
+            <views:BrowserView
+                x:Name="BrowserView"
+                DataContext="{Binding BrowserViewModel}" />
+            <Rectangle
+                x:Name="BrowserRectangle"
+                Opacity="1"
+                Stretch="Fill">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Offset="0.0" Color="#3d4c41" />
+                        <GradientStop Offset="0.5" Color="#999999" />
+                        <GradientStop Offset="1.0" Color="#e6e6e6" />
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Button
+                x:Name="BrowserViewBtn"
+                Click="BrowserViewBtn_OnClick"
+                Opacity="0.5" />
+            <TextBlock
+                x:Name="BrowserText"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="30"
+                FontWeight="DemiBold"
+                Foreground="#3d4c41"
+                IsHitTestVisible="False"
+                Text="Browse cards" />
         </Grid>
     </Grid>
 </Window>
