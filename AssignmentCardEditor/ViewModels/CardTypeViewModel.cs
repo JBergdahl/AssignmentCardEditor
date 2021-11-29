@@ -19,6 +19,7 @@ namespace AssignmentCardEditor.ViewModels
         private bool _manaIsValid;
         private string _name;
         private bool _nameIsValid;
+        private string _selectedCardType;
         private int _speedDefault;
         private bool _speedIsValid;
 
@@ -33,18 +34,6 @@ namespace AssignmentCardEditor.ViewModels
         public RelayCommand DeleteCommand { get; set; }
 
         public AsyncRelayCommand SaveCommand { get; set; }
-
-        public void OnDeleteCommandExecuted()
-        {
-            if (_selectedCardType != null)
-            {
-                var cardName = _selectedCardType;
-                _dbMethods.DeleteOneCardTypeByName(cardName);
-                CardTypeCollectionChanged?.Invoke(this, cardName);
-                CardTypeNameCollection.Remove(cardName);
-                UpdateCardTypeList();
-            }
-        }
 
         public string Name
         {
@@ -141,13 +130,8 @@ namespace AssignmentCardEditor.ViewModels
             set => SetProperty(ref _manaIsValid, value);
         }
 
-        private bool CanSave()
-        {
-            return NameIsValid && AttackIsValid && DefenseIsValid && SpeedIsValid && ManaIsValid;
-        }
-
         public ObservableCollection<string> CardTypeNameCollection { get; set; } = new();
-        private string _selectedCardType;
+
         public string SelectedCardType
         {
             get => _selectedCardType;
@@ -166,6 +150,23 @@ namespace AssignmentCardEditor.ViewModels
                     }
                 }
             }
+        }
+
+        public void OnDeleteCommandExecuted()
+        {
+            if (_selectedCardType != null)
+            {
+                var cardName = _selectedCardType;
+                _dbMethods.DeleteOneCardTypeByName(cardName);
+                CardTypeCollectionChanged?.Invoke(this, cardName);
+                CardTypeNameCollection.Remove(cardName);
+                UpdateCardTypeList();
+            }
+        }
+
+        private bool CanSave()
+        {
+            return NameIsValid && AttackIsValid && DefenseIsValid && SpeedIsValid && ManaIsValid;
         }
 
         private void UpdateCardTypeList()
@@ -189,7 +190,8 @@ namespace AssignmentCardEditor.ViewModels
             if (!nameIsTaken && ValidName(nameFormatted))
             {
                 // Add to database
-                var card = await _dbMethods.AddOneCardType(nameFormatted, _attackDefault, _defenseDefault, _speedDefault,
+                var card = await _dbMethods.AddOneCardType(nameFormatted, _attackDefault, _defenseDefault,
+                    _speedDefault,
                     _manaDefault);
 
                 // Reset fields

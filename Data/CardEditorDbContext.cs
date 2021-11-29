@@ -10,7 +10,6 @@ namespace Data
 {
     public class CardEditorDbContext : ICardEditorDbContext
     {
-        // Store collection names
         private const string CardCollectionName = "cards";
         private const string CardTypeCollectionName = "types";
 
@@ -22,14 +21,12 @@ namespace Data
         }
 
 
-        // Store collection according to type
         private readonly Dictionary<Type, string> _collectionNames = new()
         {
             { typeof(Card), CardCollectionName },
             { typeof(CardType), CardTypeCollectionName }
         };
 
-        // Get collection that corresponds to the type
         private IMongoCollection<T> GetCollection<T>()
         {
             return _database.GetCollection<T>(_collectionNames[typeof(T)]);

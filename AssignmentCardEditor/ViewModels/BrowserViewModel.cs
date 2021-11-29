@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
-using System.Data.OleDb;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -18,13 +17,13 @@ namespace AssignmentCardEditor.ViewModels
         private int _attack;
         private string _cardType;
         private int _defense;
+        private string _description;
         private string _imagePath;
         private int _mana;
         private string _name;
+        private string _nameSearch;
         private string _selectedCard;
         private int _speed;
-        private string _nameSearch;
-        private string _description;
 
         public BrowserViewModel(IDbMethods dbMethods)
         {
@@ -61,44 +60,6 @@ namespace AssignmentCardEditor.ViewModels
                     }
                 }
             }
-        }
-
-        private string FormatDescriptionText(string text)
-        {
-            if (text.Length >= 23)
-            {
-                var formattedText = "";
-                var currentWord = "";
-                var lineLength = 30;
-                var counter = 0;
-
-                for (var i = 0; i < text.Length; i++)
-                {
-                    currentWord += text.ElementAt(i);
-
-                    if (text.ElementAt(i) == ' ')
-                    {
-                        if (counter >= lineLength)
-                        {
-                            formattedText += System.Environment.NewLine;
-                            counter = 0;
-                        }
-                        else
-                        {
-                            formattedText += currentWord;
-                            currentWord = "";
-                        }
-                    }
-
-                    counter++;
-                }
-
-                if (!string.IsNullOrWhiteSpace(currentWord)) formattedText += currentWord;
-
-                return formattedText;
-            }
-
-            return text;
         }
 
         public string Name
@@ -167,13 +128,57 @@ namespace AssignmentCardEditor.ViewModels
                     }
                     else
                     {
-                        foreach (var card in TempCardNameCollection.Where(cardName => cardName.ToUpper().StartsWith(_nameSearch.ToUpper())))
+                        foreach (var card in TempCardNameCollection.Where(cardName =>
+                            cardName.ToUpper().StartsWith(_nameSearch.ToUpper())))
                         {
                             CardNameCollection.Add(card);
-                        };
+                        }
+
+                        ;
                     }
                 }
             }
+        }
+
+        private string FormatDescriptionText(string text)
+        {
+            if (text.Length >= 23)
+            {
+                var formattedText = "";
+                var currentWord = "";
+                var lineLength = 30;
+                var counter = 0;
+
+                for (var i = 0; i < text.Length; i++)
+                {
+                    currentWord += text.ElementAt(i);
+
+                    if (text.ElementAt(i) == ' ')
+                    {
+                        if (counter >= lineLength)
+                        {
+                            formattedText += Environment.NewLine;
+                            counter = 0;
+                        }
+                        else
+                        {
+                            formattedText += currentWord;
+                            currentWord = "";
+                        }
+                    }
+
+                    counter++;
+                }
+
+                if (!string.IsNullOrWhiteSpace(currentWord))
+                {
+                    formattedText += currentWord;
+                }
+
+                return formattedText;
+            }
+
+            return text;
         }
 
         private void InitCardCollectionList()
@@ -201,6 +206,7 @@ namespace AssignmentCardEditor.ViewModels
                 CardNameCollection.Add(card.Name);
                 TempCardNameCollection.Add(card.Name);
             }
+
             Name = "";
             CardType = "";
             Attack = 0;

@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CardEditor.Domain;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Data;
 using Microsoft.Win32;
-using MongoDB.Driver;
 
 namespace AssignmentCardEditor.ViewModels
 {
@@ -23,6 +19,8 @@ namespace AssignmentCardEditor.ViewModels
         private bool _attackIsValid;
         private int _defense;
         private bool _defenseIsValid;
+        private string _description;
+        private bool _descriptionIsValid;
         private string _imagePath;
         private int _mana;
         private bool _manaIsValid;
@@ -31,8 +29,6 @@ namespace AssignmentCardEditor.ViewModels
         private string _selectedCardType;
         private int _speed;
         private bool _speedIsValid;
-        private string _description;
-        private bool _descriptionIsValid;
 
         public CardViewModel(IDbMethods dbMethods)
         {
@@ -49,12 +45,6 @@ namespace AssignmentCardEditor.ViewModels
         public RelayCommand UploadImageCommand { get; set; }
 
         public ObservableCollection<string> TypeNameCollection { get; set; } = new();
-
-        private void InitInputFields()
-        {
-            Name = "Enter name";
-            Description = "Eg: Whenever 'Name' attacks, it gains +10 defense until end of turn";
-        }
 
         public string Name
         {
@@ -196,11 +186,20 @@ namespace AssignmentCardEditor.ViewModels
             set => SetProperty(ref _descriptionIsValid, value);
         }
 
+        private void InitInputFields()
+        {
+            Name = "Enter name";
+            Description = "Eg: Whenever 'Name' attacks, it gains +10 defense until end of turn";
+        }
+
         private void InitCardTypeComboBox()
         {
             TypeNameCollection.Clear();
             var listCard = _dbMethods.GetAllCardTypes();
-            foreach (var card in listCard) TypeNameCollection.Add(card.Name);
+            foreach (var card in listCard)
+            {
+                TypeNameCollection.Add(card.Name);
+            }
         }
 
         public void OnCardTypeCollectionChanged(object? sender, string cardName)
@@ -228,7 +227,8 @@ namespace AssignmentCardEditor.ViewModels
             {
                 if (!string.IsNullOrEmpty(nameFormatted) && !string.IsNullOrEmpty(descriptionFormatted))
                 {
-                    var card = await _dbMethods.AddOneCard(nameFormatted, _selectedCardType, _attack, _defense, _speed, _mana,
+                    var card = await _dbMethods.AddOneCard(nameFormatted, _selectedCardType, _attack, _defense, _speed,
+                        _mana,
                         _imagePath, descriptionFormatted);
 
                     Name = "Enter name";
@@ -243,8 +243,15 @@ namespace AssignmentCardEditor.ViewModels
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(nameFormatted)) Name = "Name is invalid!";
-                    if (string.IsNullOrEmpty(descriptionFormatted)) Name = "Description is invalid!";
+                    if (string.IsNullOrEmpty(nameFormatted))
+                    {
+                        Name = "Name is invalid!";
+                    }
+
+                    if (string.IsNullOrEmpty(descriptionFormatted))
+                    {
+                        Name = "Description is invalid!";
+                    }
                 }
             }
             else
@@ -313,18 +320,21 @@ namespace AssignmentCardEditor.ViewModels
 
         private bool CanSave()
         {
-            return NameIsValid && AttackIsValid && DefenseIsValid && SpeedIsValid && ManaIsValid && DescriptionIsValid && SelectedCardType != null;
+            return NameIsValid && AttackIsValid && DefenseIsValid && SpeedIsValid && ManaIsValid &&
+                   DescriptionIsValid && SelectedCardType != null;
         }
 
         private bool ValidName(string name)
         {
-            return name?.Length is > 1 and < 20 && !name.Equals("Enter name") && !name.Equals("Name is taken") && !name.Equals("Name is invalid!");
+            return name?.Length is > 1 and < 20 && !name.Equals("Enter name") && !name.Equals("Name is taken") &&
+                   !name.Equals("Name is invalid!");
         }
 
         private bool ValidDescription(string description)
         {
             return description?.Length is > 0 and < 100 && !description.Equals(
-                "Eg: Whenever 'Name' attacks, it gains +10 defense until end of turn") && !description.Equals("Description is invalid!");
+                       "Eg: Whenever 'Name' attacks, it gains +10 defense until end of turn") &&
+                   !description.Equals("Description is invalid!");
         }
 
         private bool ValidAttack(int attack)

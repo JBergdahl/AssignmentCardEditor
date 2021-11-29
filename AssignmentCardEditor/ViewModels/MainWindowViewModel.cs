@@ -6,9 +6,9 @@ namespace AssignmentCardEditor.ViewModels
     public class MainWindowViewModel : ObservableObject
     {
         private BrowserViewModel _browserViewModel;
+        private CardTypeBrowserViewModel _cardTypeBrowserViewModel;
         private CardTypeViewModel _cardTypeViewModel;
         private CardViewModel _cardViewModel;
-        private CardTypeBrowserViewModel _cardTypeBrowserViewModel;
 
         public MainWindowViewModel(IDbMethods dbMethods)
         {
@@ -30,11 +30,19 @@ namespace AssignmentCardEditor.ViewModels
             set
             {
                 if (_cardViewModel is not null)
+                {
                     _cardViewModel.CardCollectionChanged -= BrowserViewModel.OnCardCollectionChanged;
+                }
 
-                if (SetProperty(ref _cardViewModel, value))
-                    if (_cardViewModel is not null)
-                        _cardViewModel.CardCollectionChanged += BrowserViewModel.OnCardCollectionChanged;
+                if (!SetProperty(ref _cardViewModel, value))
+                {
+                    return;
+                }
+
+                if (_cardViewModel is not null)
+                {
+                    _cardViewModel.CardCollectionChanged += BrowserViewModel.OnCardCollectionChanged;
+                }
             }
         }
 
@@ -44,11 +52,19 @@ namespace AssignmentCardEditor.ViewModels
             set
             {
                 if (_cardTypeViewModel is not null)
+                {
                     _cardTypeViewModel.CardTypeCollectionChanged -= CardViewModel.OnCardTypeCollectionChanged;
+                }
 
-                if (SetProperty(ref _cardTypeViewModel, value))
-                    if (_cardTypeViewModel is not null)
-                        _cardTypeViewModel.CardTypeCollectionChanged += CardViewModel.OnCardTypeCollectionChanged;
+                if (!SetProperty(ref _cardTypeViewModel, value))
+                {
+                    return;
+                }
+
+                if (_cardTypeViewModel is not null)
+                {
+                    _cardTypeViewModel.CardTypeCollectionChanged += CardViewModel.OnCardTypeCollectionChanged;
+                }
             }
         }
 
